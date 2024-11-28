@@ -1,40 +1,46 @@
 import heapq
 import math
-from collections import deque
-
-if __name__== "__main__":
-
+from collections import defaultdict
+ 
+if __name__ == "__main__":
+ 
     # Get input
-    num_cities, num_roads = tuple(map(int, input().split()))
-    city_selling_prices = []
-    for i in range(num_cities):
-        city_selling_prices.append(int(input()))
-
-    # Using an edge list for simplicity
-    edges = []
-    for i in range(num_roads):
-        city_x, city_y, cost = tuple(map(int, input().split()))
-        # Need to add each edge twice for bidirectionality
-        edges.append((city_x, city_y, cost))
-        edges.append((city_y, city_x, cost))
-    edges.sort()
-
+    num_cities, num_roads = map(int, input().split())
+    city_selling_prices = [int(input()) for _ in range(num_cities)]
+ 
+    # Using adjacency list
+    adjacency_list = {}  # Default dict of lists for edges
+ 
+    # Count the number of edges out of each node
+    for _ in range(num_roads):
+        city_x, city_y, cost = map(int, input().split())
+        if city_x not in adjacency_list:
+            adjacency_list[city_x] = []
+        if city_y not in adjacency_list:
+            adjacency_list[city_y] = []
+        adjacency_list[city_x].append((city_y, cost))
+        adjacency_list[city_y].append((city_x, cost))
+ 
     # Perform Dijkstra
     tentative_distances = [math.inf] * num_cities
     tentative_distances[0] = 0
-    visited_nodes = set()
     queue = []
-    edges = deque(edges)
-    heapq.heappush(queue, 0)
-    while len(queue) != 0:
-        current_node = heapq.heappop(queue)
-        visited_nodes.add(current_node)
-        for city_x, city_y, cost in edges:
-            if current_node == city_x and city_y not in visited_nodes:
-                tentative_distances[city_y] = min(tentative_distances[city_y], 
-                                               tentative_distances[city_x] + cost)
-                heapq.heappush(queue, city_y)
-        edges.popleft() # Shorten the list of edges to parse through on the next run
+    visited_nodes = [False] * num_cities # Not a set because memory lol
+    heapq.heappush(queue, (0,0)) # distance and node
+ 
+    while queue:
+        u_cost, u = heapq.heappop(queue)
+        if visited_nodes[u]:
+            continue
+        visited_nodes[u] = True
+        for neighbor, cost in adjacency_list[u]:
+            if visited_nodes[neighbor]:
+                continue
+            new_distance = u_cost + cost
+            if new_distance < tentative_distances[neighbor]:
+                tentative_distances[neighbor] = new_distance
+                heapq.heappush(queue, (new_distance, neighbor))
+        del adjacency_list[u] # Clean up nodes we don't need bc strict af memory
  
     # Calculate the best profit
     max_profit = 0
