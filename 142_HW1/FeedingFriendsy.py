@@ -1,40 +1,44 @@
+import heapq
+import sys
+
 if __name__=="__main__":
 
-    t,n,m = tuple(map(int, input().split()))
+    t,n,m = map(int, sys.stdin.readline().split())
 
-    upper_intervals = []
-    lower_intervals = []
+    #Use a generator to read in events directly and yield them when done with them
+    def generate_events():
+        for _ in range(n):
+            start, end, glowing = map(int, sys.stdin.readline().split())
+            points = 3 if glowing == 1 else 1
+            yield (start, points, 0)  
+            yield (end + 1, -points, 0)  
 
-    #Create list of intervals
-    for i in range(n):
-        upper_intervals.append(tuple(map(int, input().split())))
-    max_upper = max(triple[1] for triple in upper_intervals)
-    for j in range(m):
-        lower_intervals.append(tuple(map(int, input().split())))
-    max_lower = max(triple[1] for triple in lower_intervals)
+        for _ in range(m):
+            start, end, glowing = map(int, sys.stdin.readline().split())
+            points = 3 if glowing == 1 else 1
+            yield (start, points, 1)  
+            yield (end + 1, -points, 1)  
 
-    #Compute the length of the sweepline arrays
-    max_interval = max(max_lower,max_upper)
-    upper_pos_points = [0] * (max_interval + 1)
-    lower_pos_points = [0] * (max_interval + 1)
+    #Sort events using generator
+    events = sorted(generate_events())
 
-    #Fill every element in the arrays to decide how many points to add per interval
-    for triple in upper_intervals:
-        for x in range(triple[0],triple[1] + 1):
-            if triple[2] == 1:
-                upper_pos_points[x] = 3
-            else:
-                upper_pos_points[x] = 1
-    for triple in lower_intervals:
-        for x in range(triple[0],triple[1] + 1):
-            if triple[2] == 1:
-                lower_pos_points[x] = 3
-            else:
-                lower_pos_points[x] = 1   
-    
-    #Sweep through both array simultaneously to compute the max # of points we can get
+    upper_active_points = 0
+    lower_active_points = 0
     point_total = 0
-    for i in range(len(upper_pos_points)):
-        point_total += max(upper_pos_points[i],lower_pos_points[i])
+    last_position = 0
+
+    # Process events directly
+    for position, change, layer in events:
+        # Calculate points for the range between the last position and the current position
+        if last_position != position:
+            point_total += max(upper_active_points, lower_active_points) * (position - last_position)
+            last_position = position
+
+        # Update active points for the respective layer
+        if layer == 0:
+            upper_active_points += change
+        else:
+            lower_active_points += change
+
     print(point_total)
     

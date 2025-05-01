@@ -29,7 +29,7 @@ if __name__=="__main__":
             return False
         #Then x is not on the wrong side of the angle
         if x > 300:
-            if (y >= (800 - x)) or (y <= (x - 300)):
+            if (y > (800 - x)) or (y < (x - 300)):
                 #print(f"{x},{y} failed condition outside of angle!")
                 return False
 
