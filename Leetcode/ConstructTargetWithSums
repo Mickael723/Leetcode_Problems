@@ -1,0 +1,32 @@
+import heapq
+class Solution:
+    def isPossible(self, target: list) -> bool:
+
+        total_sum = sum(target)
+        max_heap = []
+        for _, item in enumerate(target):
+            heapq.heappush(max_heap, -item)
+        
+        while -max_heap[0] > 1:
+
+            item = -heapq.heappop(max_heap)
+            leftover_sum = total_sum - item
+            if leftover_sum == 0 or item - leftover_sum < 1:
+                return False
+            
+            if (item % leftover_sum) == 0:
+                difference = leftover_sum
+            else:
+                difference = item % leftover_sum
+            
+            heapq.heappush(max_heap, -difference)
+
+            total_sum = total_sum - item + difference
+            
+        return True
+
+if __name__=="__main__":
+    s = Solution()
+    print(s.isPossible([9,3,5]))
+    print(s.isPossible([1,1,1,2]))
+    print(s.isPossible([8,5]))
